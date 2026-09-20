@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>TON Wallet Connect</title>
+
+  <!-- TON Connect UI -->
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0b0f16;
+      color: white;
+      font-family: Arial, sans-serif;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 20px;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 420px;
+
+      background: #151a23;
+      border: 1px solid #29313d;
+
+      border-radius: 22px;
+      padding: 30px 22px;
+
+      text-align: center;
+    }
+
+    .logo {
+      width: 70px;
+      height: 70px;
+
+      margin: auto;
+      margin-bottom: 18px;
+
+      border-radius: 50%;
+
+      background: #0098ea;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 32px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 25px;
+    }
+
+    .text {
+      color: #9aa4b2;
+      font-size: 14px;
+      line-height: 1.5;
+
+      margin-bottom: 25px;
+    }
+
+    #connect-button {
+      display: flex;
+      justify-content: center;
+    }
+
+    .wallet-info {
+      display: none;
+
+      margin-top: 22px;
+
+      padding: 16px;
+
+      background: #0d1219;
+
+      border-radius: 14px;
+
+      text-align: left;
+    }
+
+    .title {
+      color: #8e99a8;
+      font-size: 12px;
+
+      margin-bottom: 7px;
+    }
+
+    #address {
+      word-break: break-all;
+
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .status {
+      margin-top: 12px;
+
+      color: #35d07f;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+
+    <div class="logo">
+      💎
+    </div>
+
+    <h1>Connect TON Wallet</h1>
+
+    <div class="text">
+      Connect your TON wallet to continue.
+    </div>
+
+    <!-- TON Connect Button -->
+    <div id="connect-button"></div>
+
+    <!-- Wallet information -->
+    <div class="wallet-info" id="walletInfo">
+
+      <div class="title">
+        Connected Wallet
+      </div>
+
+      <div id="address">
+        -
+      </div>
+
+      <div class="status">
+        ● Wallet Connected
+      </div>
+
+    </div>
+
+  </div>
+
+
+<script>
+
+  /*
+  ==========================================
+  TON CONNECT CONFIG
+  ==========================================
+  */
+
+  /*
+  IMPORTANT:
+
+  এখানে তোমার নিজের domain বসাতে হবে।
+
+  Example:
+
+  https://yourdomain.com/tonconnect-manifest.json
+
+  */
+
+  const manifestUrl =
+    "https://YOUR-DOMAIN.com/tonconnect-manifest.json";
+
+
+  /*
+  ==========================================
+  CREATE TON CONNECT
+  ==========================================
+  */
+
+  const tonConnectUI =
+    new TON_CONNECT_UI.TonConnectUI({
+
+      manifestUrl: manifestUrl,
+
+      buttonRootId: "connect-button"
+
+    });
+
+
+  /*
+  ==========================================
+  WALLET STATUS
+  ==========================================
+  */
+
+  tonConnectUI.onStatusChange(
+    function(wallet) {
+
+      const walletInfo =
+        document.getElementById("walletInfo");
+
+      const address =
+        document.getElementById("address");
+
+
+      /*
+      Wallet connected
+      */
+
+      if (wallet && wallet.account) {
+
+        walletInfo.style.display = "block";
+
+        address.innerText =
+          wallet.account.address;
+
+        console.log(
+          "TON Wallet Connected:",
+          wallet.account.address
+        );
+
+      }
+
+
+      /*
+      Wallet disconnected
+      */
+
+      else {
+
+        walletInfo.style.display = "none";
+
+        address.innerText = "-";
+
+        console.log(
+          "TON Wallet Disconnected"
+        );
+
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
