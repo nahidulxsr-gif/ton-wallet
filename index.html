@@ -1,297 +1,1178 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EarnPay Rewards - TON Edition</title>
+    
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Firebase SDKs (v9 Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-    <title>Nahid TON Wallet</title>
-
-    <!-- TON Connect UI -->
+    <!-- TON Connect UI SDK -->
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
+    <!-- Monetag / Ad SDK -->
+    <script src="//libtl.com/sdk.js" data-zone="10487556" data-sdk="show_10487556"></script>
+
+    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        :root {
+            --brand-pink: #e2136e;
+            --brand-dark: #9e0847;
+            --brand-light: #fde8f1;
+            --ton-blue: #0088cc;
+            --glass-bg: rgba(255, 255, 255, 0.95);
         }
-
         body {
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-            background:
-                radial-gradient(circle at top, #263b70 0%, #101522 45%, #080b12 100%);
-            color: white;
+            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #fff0f5 0%, #fce4ec 100%);
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            color: #1e293b;
+            overflow: hidden;
+        }
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 25px -5px rgba(226, 19, 110, 0.07);
+        }
+        .gradient-card {
+            background: linear-gradient(135deg, #e2136e 0%, #b30f55 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 25px -5px rgba(226, 19, 110, 0.35);
+        }
+        .gradient-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-25deg);
+            animation: shimmer 3.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            50%, 100% { left: 200%; }
+        }
+        .btn-press:active { transform: scale(0.96); }
+        .nav-item.active { color: #e2136e; }
+        .nav-item.active .nav-icon { background-color: #fde8f1; transform: translateY(-3px); color: #e2136e; }
+        ::-webkit-scrollbar { width: 0px; }
+        
+        /* TonConnect Custom Button Container Fit */
+        #ton-connect-btn-container {
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
             width: 100%;
-            max-width: 430px;
         }
-
-        .card {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 25px;
-            padding: 28px 20px;
-            text-align: center;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        #ton-connect-btn-container > div {
+            width: 100%;
         }
-
-        .logo {
-            width: 90px;
-            height: 90px;
-            border-radius: 25px;
-            object-fit: cover;
-            margin-bottom: 15px;
-        }
-
-        h1 {
-            font-size: 27px;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: #aeb7ca;
-            font-size: 14px;
-            margin-bottom: 25px;
-        }
-
-        #ton-connect {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .wallet-box {
-            display: none;
-            background: rgba(0,0,0,0.25);
-            border-radius: 18px;
-            padding: 18px;
-            margin-top: 15px;
-            text-align: left;
-        }
-
-        .wallet-box.active {
-            display: block;
-        }
-
-        .label {
-            color: #8994aa;
-            font-size: 12px;
-            margin-bottom: 6px;
-        }
-
-        .address {
-            font-size: 13px;
-            word-break: break-all;
-            line-height: 1.5;
-            color: #ffffff;
-        }
-
-        .network {
-            margin-top: 12px;
-            color: #65e6a3;
-            font-size: 13px;
-        }
-
-        .status {
-            margin-top: 20px;
-            font-size: 13px;
-            color: #9ca8bd;
-        }
-
-        .footer {
-            margin-top: 22px;
-            font-size: 11px;
-            color: #69748a;
+        #ton-connect-btn-container button {
+            width: 100% !important;
+            justify-content: center !important;
+            border-radius: 0.75rem !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 700 !important;
         }
     </style>
 </head>
+<body class="h-screen flex justify-center">
 
-<body>
-
-<div class="container">
-
-    <div class="card">
-
-        <img
-            src="icon.png"
-            class="logo"
-            alt="TON Wallet"
-        >
-
-        <h1>Nahid TON Wallet</h1>
-
-        <div class="subtitle">
-            Connect your TON wallet securely
+    <!-- Global Loader -->
+    <div id="global-loader" class="fixed inset-0 z-50 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="w-20 h-20 rounded-2xl p-1 bg-gradient-to-tr from-pink-500 to-[#e2136e] shadow-xl shadow-pink-500/20 animate-bounce mb-4 flex items-center justify-center text-white text-3xl">
+            <i class="fa-solid fa-bolt"></i>
         </div>
-
-        <!-- TON Connect Button -->
-        <div id="ton-connect"></div>
-
-        <!-- Wallet Information -->
-        <div id="walletBox" class="wallet-box">
-
-            <div class="label">
-                WALLET ADDRESS
-            </div>
-
-            <div id="walletAddress" class="address">
-                -
-            </div>
-
-            <div id="walletNetwork" class="network">
-                ● Connected
-            </div>
-
-        </div>
-
-        <div id="status" class="status">
-            Wallet not connected
-        </div>
-
-        <div class="footer">
-            Powered by TON Connect
-        </div>
-
+        <h2 class="text-slate-800 font-black text-xl tracking-wide font-inter">EarnPay Rewards</h2>
+        <p class="text-[#e2136e] text-xs mt-2 font-bold animate-pulse">ডাটা লোড হচ্ছে, অপেক্ষা করুন...</p>
     </div>
 
-</div>
+    <!-- Dynamic Popup Notice Modal -->
+    <div id="notice-modal" class="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-5">
+        <div class="bg-white rounded-[2rem] max-w-sm w-full p-6 shadow-2xl border border-pink-100">
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-pink-50 text-[#e2136e] rounded-full flex items-center justify-center mx-auto mb-2 text-xl shadow-inner">
+                    <i class="fa-solid fa-bullhorn"></i>
+                </div>
+                <h3 id="popup-notice-title" class="text-base font-extrabold text-slate-800">জরুরী নোটিশ</h3>
+                <span id="popup-notice-date" class="text-[10px] text-slate-400 font-inter"></span>
+            </div>
+            <p id="popup-notice-body" class="text-slate-600 text-xs text-center leading-relaxed mb-5 font-medium max-h-48 overflow-y-auto">
+                তথ্য লোড হচ্ছে...
+            </p>
+            <div class="space-y-2">
+                <a id="popup-notice-video-btn" href="#" target="_blank" class="w-full bg-rose-50 text-rose-600 border border-rose-200 font-bold py-3 rounded-xl btn-press text-xs flex items-center justify-center gap-2 hidden">
+                    <i class="fa-brands fa-youtube text-base"></i> ভিডিও দেখুন
+                </a>
+                <button onclick="closeNoticeModal()" class="w-full bg-[#e2136e] text-white font-bold py-3 rounded-xl btn-press shadow-md text-xs">
+                    পড়েছি, ধন্যবাদ
+                </button>
+            </div>
+        </div>
+    </div>
 
+    <!-- Main Mobile Container -->
+    <div class="w-full max-w-md h-full bg-[#fffbfd] relative shadow-2xl flex flex-col hidden" id="app-container">
+        
+        <!-- Header -->
+        <div class="glass px-5 py-3.5 flex items-center justify-between z-20 absolute top-0 w-full rounded-b-3xl border-b border-pink-100/60 shadow-sm">
+            <div class="flex items-center gap-3">
+                <img id="user-avatar" src="https://placehold.co/100" class="w-10 h-10 rounded-full object-cover border-2 border-[#e2136e]">
+                <div>
+                    <h1 class="font-bold text-slate-800 text-sm" id="header-username">ব্যবহারকারী</h1>
+                    <p class="text-[12px] text-[#e2136e] font-black font-inter">৳ <span id="header-balance">0.00</span></p>
+                </div>
+            </div>
+            <span class="text-[10px] bg-pink-50 text-[#e2136e] border border-pink-200 px-3 py-1 rounded-full font-bold">
+                অফিসিয়াল অ্যাপ
+            </span>
+        </div>
 
-<script>
+        <!-- Scrollable Body -->
+        <div class="flex-1 overflow-y-auto pt-20 pb-24 scroll-smooth" id="main-content">
+            
+            <!-- 1. HOME VIEW -->
+            <div id="view-home" class="p-5 space-y-4">
+                <!-- User Balance Card -->
+                <div class="gradient-card rounded-3xl p-5 text-white">
+                    <div class="flex justify-between items-center mb-1">
+                        <p class="text-[11px] font-semibold text-pink-100 uppercase tracking-wider">বর্তমান ওয়ালেট ব্যালেন্স</p>
+                        <i class="fa-solid fa-wallet text-white/50 text-sm"></i>
+                    </div>
+                    <h1 class="text-3xl font-black mb-4 font-inter">৳ <span id="home-balance">0.00</span></h1>
+                    <div class="flex gap-2">
+                        <button onclick="switchTab('tasks')" class="flex-1 bg-white text-[#e2136e] py-2.5 rounded-xl font-bold text-xs shadow btn-press flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-play"></i> কাজ করুন
+                        </button>
+                        <button onclick="switchTab('wallet')" class="flex-1 bg-black/20 text-white border border-white/30 py-2.5 rounded-xl font-bold text-xs btn-press flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-gem"></i> TON উত্তোলন
+                        </button>
+                    </div>
+                </div>
 
-    // ============================================
-    // TON CONNECT CONFIGURATION
-    // ============================================
+                <!-- Admin Embedded YouTube Video Section -->
+                <div id="guide-video-wrapper" class="glass rounded-3xl p-4 border border-pink-100 shadow-sm space-y-2">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i class="fa-brands fa-youtube text-rose-600 text-lg"></i>
+                        <h3 class="font-bold text-xs text-slate-800">কীভাবে কাজ করবেন দেখুন</h3>
+                    </div>
+                    <div class="w-full aspect-video rounded-2xl overflow-hidden bg-slate-900 shadow-inner">
+                        <iframe id="guide-video-frame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
 
-    const manifestUrl =
-        "https://nahidulxsr-gif.github.io/ton-wallet/tonconnect-manifest.json";
+                <!-- Rules & Guidelines Card -->
+                <div class="glass rounded-3xl p-4 border border-pink-100 shadow-sm space-y-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-[#e2136e] text-sm"></i>
+                        <h3 class="font-bold text-xs text-slate-800">অ্যাপ থেকে আয়ের নিয়মাবলী</h3>
+                    </div>
+                    <div id="admin-rules-content" class="text-[11px] text-slate-600 leading-relaxed font-medium space-y-1.5 bg-pink-50/40 p-3 rounded-xl border border-pink-100/50">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
 
+                <!-- Referral Info & Link Box -->
+                <div class="glass rounded-3xl p-4 border border-pink-100 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-xs text-slate-800">বন্ধুদের রেফার করুন</h3>
+                            <p class="text-[10px] text-slate-500">প্রতি সফল রেফারে পাবেন ৳ <span id="ref-bonus-display" class="font-bold text-[#e2136e]">0</span></p>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-pink-50 text-[#e2136e] flex items-center justify-center text-xs font-bold font-inter" id="stat-referrals">0</div>
+                    </div>
+                    <div class="bg-slate-50 p-1.5 rounded-xl border border-slate-200 flex items-center gap-2">
+                        <p class="text-[10px] text-slate-500 truncate flex-1 font-inter pl-2" id="home-ref-link">লোড হচ্ছে...</p>
+                        <button onclick="copyRefLink()" class="bg-[#e2136e] text-white text-[10px] px-3.5 py-2 rounded-lg font-bold btn-press shadow">কপি লিংক</button>
+                    </div>
+                </div>
+            </div>
 
-    // Create TON Connect UI
-    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            <!-- 2. TASKS / ADS VIEW -->
+            <div id="view-tasks" class="p-5 space-y-5 hidden">
+                <div class="text-center">
+                    <h2 class="text-xl font-black text-slate-800">টাস্ক ও অ্যাড সেন্টার</h2>
+                    <p class="text-[11px] text-slate-500">বিজ্ঞাপন দেখে এবং সাধারণ টাস্ক করে আয় করুন</p>
+                </div>
 
-        manifestUrl: manifestUrl,
+                <!-- Ad Section with 15s Timer -->
+                <div class="glass rounded-3xl p-5 border-l-4 border-l-[#e2136e] shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">দৈনিক অ্যাড সীমা</p>
+                            <h3 class="text-2xl font-black text-slate-800 font-inter"><span id="ads-done-count">0</span><span class="text-slate-300 text-lg">/<span id="ads-limit-count">50</span></span></h3>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] bg-pink-50 text-[#e2136e] font-bold px-2.5 py-1 rounded-full border border-pink-100 font-inter">+৳ <span id="ad-single-reward">0.50</span></span>
+                        </div>
+                    </div>
+                    
+                    <button id="watch-ad-btn" onclick="startSecureAdWatch()" class="w-full bg-slate-900 text-white p-3.5 rounded-2xl shadow btn-press flex items-center justify-between border border-slate-700">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-pink-600 text-white flex items-center justify-center text-sm"><i class="fa-solid fa-play"></i></div>
+                            <span class="font-bold text-xs">ভিডিও অ্যাড দেখুন (১৫ সেকেন্ড)</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+                    </button>
+                    <p class="text-[10px] text-amber-700 mt-2 font-medium"><i class="fa-solid fa-triangle-exclamation"></i> অ্যাড চলাকালীন ১৫ সেকেন্ড ট্যাব পরিবর্তন করবেন না।</p>
+                </div>
 
-        buttonRootId: "ton-connect"
+                <!-- Dynamic High Quality Tasks List -->
+                <div>
+                    <h3 class="font-bold text-xs text-slate-700 mb-3">সহজ টাস্কসমূহ</h3>
+                    <div id="dynamic-tasks-container" class="space-y-3">
+                        <p class="text-center text-xs text-slate-400 py-4">টাস্ক লোড হচ্ছে...</p>
+                    </div>
+                </div>
+            </div>
 
-    });
+            <!-- 3. WALLET / WITHDRAW VIEW (TON REDESIGNED) -->
+            <div id="view-wallet" class="p-5 space-y-4 hidden">
+                <!-- User Balance Card -->
+                <div class="gradient-card rounded-3xl p-5 text-white text-center">
+                    <p class="text-[11px] font-semibold text-pink-100 uppercase tracking-wider mb-0.5">উত্তোলনযোগ্য ব্যালেন্স</p>
+                    <h1 class="text-3xl font-black font-inter">৳ <span id="wallet-balance">0.00</span></h1>
+                    <p class="text-[10px] text-pink-200 font-inter mt-1">আনুমানিক: ≈ <span id="wallet-balance-ton" class="font-bold">0.000</span> TON</p>
+                </div>
 
+                <!-- TON Connect Dashboard Card -->
+                <div class="glass rounded-3xl p-5 shadow-sm border border-pink-100 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-lg bg-sky-50 text-[#0088cc] flex items-center justify-center text-sm">
+                                <i class="fa-solid fa-gem"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xs text-slate-800">TON Wallet</h3>
+                                <p class="text-[9px] text-slate-400">TON Connect Protocol</p>
+                            </div>
+                        </div>
+                        <span id="ton-network-badge" class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-slate-200">
+                            অসংযুক্ত
+                        </span>
+                    </div>
 
-    // ============================================
-    // ELEMENTS
-    // ============================================
+                    <!-- Disconnected State -->
+                    <div id="ton-disconnected-box" class="space-y-3">
+                        <p class="text-[11px] text-slate-600 leading-relaxed bg-sky-50/60 p-3 rounded-2xl border border-sky-100 text-center font-medium">
+                            পেমেন্ট গ্রহণের জন্য আপনার অফিসিয়াল TON ওয়ালেট (Telegram Wallet, Tonkeeper ইত্যাদি) কানেক্ট করুন।
+                        </p>
+                        <div id="ton-connect-btn-container" class="w-full"></div>
+                    </div>
 
-    const walletBox =
-        document.getElementById("walletBox");
+                    <!-- Connected State -->
+                    <div id="ton-connected-box" class="space-y-3 hidden">
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+                            <div class="flex justify-between items-center text-[10px]">
+                                <span class="text-slate-400 font-medium">কানেক্টেড অ্যাড্রেস</span>
+                                <span class="text-emerald-600 font-bold flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ভেরিফাইড ওয়ালেট
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <span id="ton-address-short" class="font-mono text-xs font-bold text-slate-800 tracking-wider">UQ...</span>
+                                <div class="flex gap-1.5">
+                                    <button onclick="copyTonAddress()" class="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-700 btn-press flex items-center gap-1 shadow-sm">
+                                        <i class="fa-regular fa-copy text-pink-600"></i> কপি
+                                    </button>
+                                    <button onclick="disconnectTonWallet()" class="px-2.5 py-1.5 bg-rose-50 border border-rose-100 rounded-lg text-[10px] font-bold text-rose-600 btn-press shadow-sm">
+                                        ডিসকানেক্ট
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    const walletAddress =
-        document.getElementById("walletAddress");
+                <!-- TON Withdrawal Form -->
+                <div class="glass rounded-3xl p-5 shadow-sm space-y-3.5 border border-pink-100">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-xs text-slate-800">টাকা উত্তোলন (TON)</h3>
+                        <span class="text-[10px] text-pink-600 font-bold bg-pink-50 px-2 py-0.5 rounded-full" id="charge-label">ফি: ০%</span>
+                    </div>
 
-    const walletNetwork =
-        document.getElementById("walletNetwork");
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-600 mb-1.5 block">উত্তোলনের পরিমাণ (টাকা)</label>
+                        <input type="number" id="withdraw-amount-input" oninput="calculateTonWithdrawNet()" placeholder="100" class="w-full bg-white border border-pink-100 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-[#e2136e] font-bold font-inter">
+                        <div class="flex justify-between items-center mt-1.5 text-[10px]">
+                            <span class="text-slate-400">সর্বনিম্ন: ৳<span id="min-withdraw-label">50</span></span>
+                            <span class="text-sky-600 font-bold font-inter" id="ton-est-receive-label">আপনি পাবেন: ≈ 0.0000 TON</span>
+                        </div>
+                    </div>
 
-    const status =
-        document.getElementById("status");
+                    <!-- Destination Information -->
+                    <div class="bg-pink-50/30 p-2.5 rounded-xl border border-pink-100/50 flex items-center justify-between text-[10px]">
+                        <span class="text-slate-500 font-medium">গন্তব্য:</span>
+                        <span id="withdraw-destination-text" class="font-mono text-slate-700 font-bold">ওয়ালেট কানেক্টেড নেই</span>
+                    </div>
 
+                    <!-- Exchange Rate Notice -->
+                    <div class="text-[10px] text-slate-400 flex justify-between font-inter px-1">
+                        <span>বর্তমান রেট:</span>
+                        <span>1 TON ≈ ৳<span id="ton-exchange-rate-label">700</span></span>
+                    </div>
 
-    // ============================================
-    // WALLET STATUS
-    // ============================================
+                    <button id="withdraw-submit-btn" onclick="submitTonWithdrawal()" class="w-full bg-[#e2136e] text-white font-bold py-3.5 rounded-xl shadow btn-press text-xs flex items-center justify-center gap-2">
+                        <span>উইথড্র রিকোয়েস্ট পাঠান</span>
+                    </button>
+                </div>
 
-    tonConnectUI.onStatusChange(function(wallet) {
+                <!-- Recent Withdrawals History List -->
+                <div>
+                    <h3 class="font-bold text-xs text-slate-700 mb-2.5">উত্তোলন হিস্টোরি</h3>
+                    <div id="wallet-history-list" class="space-y-2.5">
+                        <p class="text-center text-xs text-slate-400 py-4">হিস্টোরি লোড হচ্ছে...</p>
+                    </div>
+                </div>
+            </div>
 
-        if (wallet) {
+            <!-- 4. PROFILE VIEW -->
+            <div id="view-profile" class="p-5 space-y-4 hidden">
+                <div class="glass rounded-3xl p-5 text-center border border-pink-100 shadow-sm">
+                    <img id="profile-img" src="https://placehold.co/100" class="w-20 h-20 rounded-full mx-auto p-1 border-2 border-[#e2136e] object-cover mb-2">
+                    <h2 class="font-black text-base text-slate-800" id="profile-user-name">ব্যবহারকারী</h2>
+                    <p class="text-[10px] text-slate-500 font-inter">ID: <span id="profile-user-id">...</span></p>
+                </div>
 
-            console.log("Wallet connected:", wallet);
+                <!-- Statistics Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="glass p-3.5 rounded-2xl border border-pink-50">
+                        <span class="text-[10px] text-slate-400 font-bold block">মোট আয়</span>
+                        <h4 class="text-base font-black text-slate-800 font-inter">৳ <span id="stat-total-income">0.00</span></h4>
+                    </div>
+                    <div class="glass p-3.5 rounded-2xl border border-pink-50">
+                        <span class="text-[10px] text-slate-400 font-bold block">মোট রেফার</span>
+                        <h4 class="text-base font-black text-slate-800 font-inter"><span id="stat-profile-refs">0</span> জন</h4>
+                    </div>
+                </div>
 
-            // Show wallet box
-            walletBox.classList.add("active");
+                <!-- Support & Help -->
+                <div class="space-y-2">
+                    <a id="profile-support-btn" href="#" target="_blank" class="glass p-3.5 rounded-2xl flex items-center justify-between btn-press">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-pink-50 text-[#e2136e] flex items-center justify-center text-xs"><i class="fa-solid fa-headset"></i></div>
+                            <span class="text-xs font-bold text-slate-700">২৪/৭ টেলিগ্রাম সাপোর্ট</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                    </a>
+                </div>
+            </div>
 
-            // Wallet address
-            walletAddress.textContent =
-                wallet.account.address;
+        </div>
 
-            // Network
-            if (wallet.account.chain === "-239") {
+        <!-- Clean 4-Tab Bottom Navigation Bar -->
+        <div class="glass absolute bottom-0 w-full h-16 px-6 flex justify-between items-center z-30 rounded-t-3xl border-t border-pink-100/60 shadow-[0_-5px_20px_rgba(226,19,110,0.04)] bg-white/95">
+            <button onclick="switchTab('home')" class="nav-item active flex flex-col items-center gap-1 transition-all" data-target="home">
+                <div class="nav-icon w-8 h-8 rounded-xl flex items-center justify-center transition-all"><i class="fa-solid fa-house text-sm"></i></div>
+                <span class="text-[9px] font-bold">হোম</span>
+            </button>
+            <button onclick="switchTab('tasks')" class="nav-item text-slate-400 flex flex-col items-center gap-1 transition-all" data-target="tasks">
+                <div class="nav-icon w-8 h-8 rounded-xl flex items-center justify-center transition-all"><i class="fa-solid fa-list-check text-sm"></i></div>
+                <span class="text-[9px] font-bold">কাজ</span>
+            </button>
+            <button onclick="switchTab('wallet')" class="nav-item text-slate-400 flex flex-col items-center gap-1 transition-all" data-target="wallet">
+                <div class="nav-icon w-8 h-8 rounded-xl flex items-center justify-center transition-all"><i class="fa-solid fa-gem text-sm"></i></div>
+                <span class="text-[9px] font-bold">ওয়ালেট</span>
+            </button>
+            <button onclick="switchTab('profile')" class="nav-item text-slate-400 flex flex-col items-center gap-1 transition-all" data-target="profile">
+                <div class="nav-icon w-8 h-8 rounded-xl flex items-center justify-center transition-all"><i class="fa-solid fa-user text-sm"></i></div>
+                <span class="text-[9px] font-bold">প্রোফাইল</span>
+            </button>
+        </div>
+    </div>
 
-                walletNetwork.textContent =
-                    "● Connected • TON Mainnet";
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-[-60px] left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-5 py-2.5 rounded-full shadow-2xl transition-all duration-300 z-50 flex items-center gap-2 text-xs border border-slate-700">
+        <i id="toast-icon" class="fa-solid fa-check text-pink-400"></i>
+        <span id="toast-msg">সফল হয়েছে</span>
+    </div>
 
-            } else if (wallet.account.chain === "-3") {
+    <!-- SCRIPT ENGINE -->
+    <script>
+        const BOT_USERNAME = "bKashEarnOfficialBot"; 
+        const BOT_APP_NAME = "app"; 
 
-                walletNetwork.textContent =
-                    "● Connected • TON Testnet";
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHLiQWuDMOORQewtqhKUJaC8BQlUfKo7I",
+            authDomain: "bdearnings.firebaseapp.com",
+            projectId: "bdearnings",
+            storageBucket: "bdearnings.firebasestorage.app",
+            messagingSenderId: "547328921031",
+            appId: "1:547328921031:web:3aa8fe0ad1250d82fb1de2"
+        };
 
-            } else {
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const tg = window.Telegram?.WebApp;
 
-                walletNetwork.textContent =
-                    "● Connected";
+        // Dynamic Application Settings
+        let appSettings = {
+            botToken: "",
+            adReward: 0.50,
+            dailyAdLimit: 50,
+            referralBonus: 5.00,
+            minWithdraw: 50,
+            withdrawFeePercent: 0,
+            tonBdtRate: 700, // 1 TON = 700 BDT default
+            helpLink: "https://t.me/",
+            guideVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            howToEarnText: "১. প্রতিদিন অ্যাড দেখে ইনকাম করুন।\n২. সহজ টাস্কগুলো সম্পন্ন করুন।\n৩. বন্ধুদের রেফার করে বোনাস নিন।\n৪. TON ওয়ালেটে সরাসরি পেমেন্ট নিন।",
+            adLink: ""
+        };
 
+        let tasksList = [];
+        let currentUser = null;
+        let userData = {};
+        
+        // Anti-Cheat Variables
+        let isAdWatching = false;
+        let adWatchTimer = null;
+        let adSecondsLeft = 15;
+
+        // TON Connect Variables
+        let tonConnectUI = null;
+        let connectedTonAddress = null;
+        let connectedRawAddress = null;
+        let isSubmittingWithdrawal = false;
+        let historyUnsubscribe = null;
+
+        // Helper: Convert raw address (0:...) to user-friendly bounceable format if needed
+        function toUserFriendlyAddress(rawAddress) {
+            if (!rawAddress) return "";
+            if (rawAddress.includes(':')) {
+                // Short fallback if raw hex is presented
+                const parts = rawAddress.split(':');
+                return "UQ" + parts[1].substring(0, 4) + "..." + parts[1].substring(parts[1].length - 4);
             }
-
-            status.textContent =
-                "Wallet successfully connected";
-
-        } else {
-
-            // Wallet disconnected
-
-            walletBox.classList.remove("active");
-
-            walletAddress.textContent = "-";
-
-            walletNetwork.textContent =
-                "● Not connected";
-
-            status.textContent =
-                "Wallet not connected";
-
+            return rawAddress;
         }
 
-    });
-
-
-    // ============================================
-    // OPTIONAL: GET CURRENT WALLET
-    // ============================================
-
-    async function checkWallet() {
-
-        try {
-
-            const wallet =
-                tonConnectUI.wallet;
-
-            if (wallet) {
-
-                console.log(
-                    "Current wallet:",
-                    wallet.account.address
-                );
-
-            }
-
-        } catch(error) {
-
-            console.log(error);
-
+        function formatShortAddress(address) {
+            if (!address) return "";
+            if (address.length <= 12) return address;
+            return address.substring(0, 4) + "..." + address.substring(address.length - 4);
         }
 
-    }
+        // Helper: Extract YouTube Embed URL
+        function getEmbedUrl(url) {
+            if(!url) return "";
+            let videoId = "";
+            if(url.includes("youtu.be/")) {
+                videoId = url.split("youtu.be/")[1].split("?")[0];
+            } else if(url.includes("watch?v=")) {
+                videoId = url.split("watch?v=")[1].split("&")[0];
+            } else if(url.includes("embed/")) {
+                return url;
+            }
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+        }
 
+        // 1. TELEGRAM AUTHENTICATION
+        function getTelegramUser() {
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) return tg.initDataUnsafe.user;
+            if (tg && tg.initData) {
+                try {
+                    const params = new URLSearchParams(tg.initData);
+                    const userRaw = params.get('user');
+                    if (userRaw) return JSON.parse(userRaw);
+                } catch (e) {}
+            }
+            if (window.location.hostname === "localhost" || window.location.protocol === "file:") {
+                return { id: 77889900, first_name: "Demo User", username: "demouser", photo_url: "" };
+            }
+            return null;
+        }
 
-    checkWallet();
+        function triggerHaptic(type = "light") {
+            try {
+                if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred(type);
+            } catch(e) {}
+        }
 
-</script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (tg) {
+                tg.ready();
+                tg.expand();
+                tg.setHeaderColor('#e2136e');
+                tg.setBackgroundColor('#fffbfd');
+            }
 
+            currentUser = getTelegramUser();
+            if (!currentUser) {
+                document.body.innerHTML = `<div class='flex flex-col items-center justify-center h-screen text-center p-6 bg-[#fffbfd]'>
+                    <i class="fa-solid fa-lock text-4xl text-[#e2136e] mb-3"></i>
+                    <h2 class='font-black text-lg'>শুধুমাত্র টেলিগ্রাম অ্যাপের ভিতর ওপেন করুন</h2>
+                </div>`;
+                return;
+            }
+
+            setupAntiCheat();
+            setupTonConnect();
+            await initAppEngine();
+        });
+
+        // 2. TON CONNECT INITIALIZATION
+        function setupTonConnect() {
+            try {
+                tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                    manifestUrl: 'https://nahidulxsr-gif.github.io/ton-wallet/tonconnect-manifest.json',
+                    buttonRootId: 'ton-connect-btn-container'
+                });
+
+                // Listen to TON wallet status changes
+                tonConnectUI.onStatusChange(async (wallet) => {
+                    if (wallet) {
+                        connectedRawAddress = wallet.account.address;
+                        // TON Connect UI provides non-bounceable/bounceable formats in account
+                        connectedTonAddress = wallet.account.address;
+                        
+                        onWalletConnected(wallet);
+                    } else {
+                        onWalletDisconnected();
+                    }
+                });
+            } catch (err) {
+                console.error("TON Connect UI Init Error:", err);
+            }
+        }
+
+        async function onWalletConnected(wallet) {
+            const friendly = toUserFriendlyAddress(wallet.account.address);
+            document.getElementById('ton-disconnected-box').classList.add('hidden');
+            document.getElementById('ton-connected-box').classList.remove('hidden');
+            document.getElementById('ton-address-short').innerText = formatShortAddress(friendly);
+            document.getElementById('ton-network-badge').innerText = "TON Mainnet";
+            document.getElementById('ton-network-badge').className = "text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-emerald-200";
+            document.getElementById('withdraw-destination-text').innerText = formatShortAddress(friendly);
+
+            // Update user Firestore record
+            if (currentUser && currentUser.id) {
+                try {
+                    await db.collection('users').doc(currentUser.id.toString()).update({
+                        walletAddress: wallet.account.address,
+                        walletNetwork: wallet.account.chain === "-239" ? "mainnet" : "testnet",
+                        walletConnected: true,
+                        walletConnectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        walletLastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (e) {
+                    console.error("Error updating user wallet in db:", e);
+                }
+            }
+            showToast("TON ওয়ালেট সংযুক্ত হয়েছে", "success");
+        }
+
+        async function onWalletDisconnected() {
+            connectedTonAddress = null;
+            connectedRawAddress = null;
+            document.getElementById('ton-connected-box').classList.add('hidden');
+            document.getElementById('ton-disconnected-box').classList.remove('hidden');
+            document.getElementById('ton-network-badge').innerText = "অসংযুক্ত";
+            document.getElementById('ton-network-badge').className = "text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-slate-200";
+            document.getElementById('withdraw-destination-text').innerText = "ওয়ালেট কানেক্টেড নেই";
+
+            if (currentUser && currentUser.id) {
+                try {
+                    await db.collection('users').doc(currentUser.id.toString()).update({
+                        walletConnected: false,
+                        walletLastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch(e) {}
+            }
+        }
+
+        async function disconnectTonWallet() {
+            triggerHaptic('medium');
+            if (tonConnectUI) {
+                await tonConnectUI.disconnect();
+                showToast("ওয়ালেট ডিসকানেক্ট করা হয়েছে", "info");
+            }
+        }
+
+        function copyTonAddress() {
+            triggerHaptic('light');
+            if (connectedTonAddress) {
+                navigator.clipboard.writeText(connectedTonAddress);
+                showToast("অ্যাড্রেস কপি হয়েছে!", "success");
+            }
+        }
+
+        // 3. ANTI-CHEAT ENGINE
+        function setupAntiCheat() {
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden && isAdWatching) cancelAdWatch("স্ক্রিন বা ট্যাব পরিবর্তন করায় রিওয়ার্ড বাতিল করা হয়েছে!");
+            });
+            window.addEventListener("blur", () => {
+                if (isAdWatching) cancelAdWatch("স্ক্রিন ফোকাস হারানোর কারণে অ্যাড বাতিল হয়েছে!");
+            });
+        }
+
+        function cancelAdWatch(msg) {
+            if (!isAdWatching) return;
+            isAdWatching = false;
+            clearInterval(adWatchTimer);
+            resetAdButton();
+            showToast(msg, "error");
+        }
+
+        function resetAdButton() {
+            const btn = document.getElementById('watch-ad-btn');
+            btn.disabled = false;
+            btn.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-pink-600 text-white flex items-center justify-center text-sm"><i class="fa-solid fa-play"></i></div>
+                    <span class="font-bold text-xs">ভিডিও অ্যাড দেখুন (১৫ সেকেন্ড)</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>`;
+        }
+
+        // 4. TELEGRAM BOT NOTIFICATIONS
+        async function sendBotMessage(chatId, text) {
+            if(!appSettings.botToken || !chatId) return;
+            try {
+                await fetch(`https://api.telegram.org/bot${appSettings.botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'HTML' })
+                });
+            } catch(e) {}
+        }
+
+        // 5. MAIN INIT & LISTENERS
+        async function initAppEngine() {
+            try {
+                // Listen to Global App Settings
+                db.collection('appConfig').doc('settings').onSnapshot(doc => {
+                    if (doc.exists) {
+                        appSettings = { ...appSettings, ...doc.data() };
+                        renderConfig();
+                    }
+                });
+
+                // Listen to Dynamic Tasks
+                db.collection('tasks').onSnapshot(snap => {
+                    tasksList = [];
+                    snap.forEach(d => tasksList.push({ id: d.id, ...d.data() }));
+                    renderTasks();
+                });
+
+                // User Record Checking
+                const uRef = db.collection('users').doc(currentUser.id.toString());
+                const uDoc = await uRef.get();
+
+                if (!uDoc.exists) {
+                    await registerUser(uRef);
+                } else {
+                    checkDailyReset(uRef, uDoc.data());
+                }
+
+                uRef.onSnapshot(doc => {
+                    if(doc.exists) {
+                        userData = doc.data();
+                        updateUserUI(userData);
+                    }
+                });
+
+                // Setup realtime withdrawal history
+                listenWithdrawalHistory();
+                checkPopupNotice();
+
+                setTimeout(() => {
+                    document.getElementById('global-loader').style.display = 'none';
+                    document.getElementById('app-container').classList.remove('hidden');
+                }, 600);
+
+            } catch(e) {
+                console.error(e);
+                showToast("সার্ভার কানেকশন ত্রুটি", "error");
+            }
+        }
+
+        async function registerUser(uRef) {
+            const startParam = tg?.initDataUnsafe?.start_param || "";
+            let referrerId = null;
+            if (startParam && startParam.startsWith('ref_')) referrerId = startParam.split('_')[1];
+
+            const initData = {
+                id: currentUser.id,
+                username: currentUser.username || currentUser.first_name || "User",
+                balance: 0.00,
+                referralCount: 0,
+                totalIncome: 0.00,
+                dailyAdsWatched: 0,
+                lastAdDate: new Date().toISOString().split('T')[0],
+                completedTasks: [],
+                walletAddress: null,
+                walletNetwork: null,
+                walletConnected: false,
+                referredBy: referrerId,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            await db.runTransaction(async (t) => {
+                let refDoc = null;
+                if (referrerId && referrerId !== currentUser.id.toString()) {
+                    refDoc = await t.get(db.collection('users').doc(referrerId));
+                }
+
+                t.set(uRef, initData);
+
+                if (refDoc && refDoc.exists) {
+                    const bonus = parseFloat(appSettings.referralBonus || 5);
+                    const rData = refDoc.data();
+                    t.update(refDoc.ref, {
+                        balance: (rData.balance || 0) + bonus,
+                        referralCount: (rData.referralCount || 0) + 1,
+                        totalIncome: (rData.totalIncome || 0) + bonus
+                    });
+
+                    sendBotMessage(referrerId, `🎉 <b>নতুন রেফারেল বোনাস!</b>\n\n👤 ব্যবহারকারী: @${currentUser.username || currentUser.first_name}\n💰 বোনাস: ৳ ${bonus.toFixed(2)}`);
+                }
+            });
+        }
+
+        function checkDailyReset(ref, data) {
+            const today = new Date().toISOString().split('T')[0];
+            if (data.lastAdDate !== today) {
+                ref.update({ dailyAdsWatched: 0, lastAdDate: today });
+            }
+        }
+
+        function renderConfig() {
+            document.getElementById('ads-limit-count').innerText = appSettings.dailyAdLimit;
+            document.getElementById('ad-single-reward').innerText = parseFloat(appSettings.adReward).toFixed(2);
+            document.getElementById('ref-bonus-display').innerText = appSettings.referralBonus;
+            document.getElementById('min-withdraw-label').innerText = appSettings.minWithdraw;
+            document.getElementById('charge-label').innerText = `ফি: ${appSettings.withdrawFeePercent}%`;
+            document.getElementById('ton-exchange-rate-label').innerText = appSettings.tonBdtRate || 700;
+            document.getElementById('profile-support-btn').href = appSettings.helpLink || "#";
+
+            // Recalculate balances with updated TON rate
+            if(userData.balance !== undefined) {
+                calculateTonWithdrawNet();
+                const bdtBal = parseFloat(userData.balance || 0);
+                const rate = parseFloat(appSettings.tonBdtRate || 700);
+                document.getElementById('wallet-balance-ton').innerText = (bdtBal / rate).toFixed(3);
+            }
+
+            // YouTube Video Embed
+            const iframe = document.getElementById('guide-video-frame');
+            if(iframe && appSettings.guideVideoUrl) {
+                iframe.src = getEmbedUrl(appSettings.guideVideoUrl);
+            }
+
+            // Rules Guideline Box
+            const rulesBox = document.getElementById('admin-rules-content');
+            if(rulesBox) {
+                rulesBox.innerHTML = (appSettings.howToEarnText || "").split('\n').map(line => `<p>${line}</p>`).join('');
+            }
+        }
+
+        function updateUserUI(data) {
+            const bal = parseFloat(data.balance || 0).toFixed(2);
+            document.getElementById('header-balance').innerText = bal;
+            document.getElementById('home-balance').innerText = bal;
+            document.getElementById('wallet-balance').innerText = bal;
+            
+            const rate = parseFloat(appSettings.tonBdtRate || 700);
+            document.getElementById('wallet-balance-ton').innerText = (parseFloat(bal) / rate).toFixed(3);
+
+            document.getElementById('stat-total-income').innerText = parseFloat(data.totalIncome || 0).toFixed(2);
+            document.getElementById('header-username').innerText = data.username || "User";
+            document.getElementById('profile-user-name').innerText = data.username || currentUser.first_name;
+            document.getElementById('profile-user-id').innerText = data.id;
+
+            if(currentUser?.photo_url) {
+                document.getElementById('user-avatar').src = currentUser.photo_url;
+                document.getElementById('profile-img').src = currentUser.photo_url;
+            }
+
+            document.getElementById('stat-referrals').innerText = data.referralCount || 0;
+            document.getElementById('stat-profile-refs').innerText = data.referralCount || 0;
+            document.getElementById('ads-done-count').innerText = data.dailyAdsWatched || 0;
+
+            const link = `https://t.me/${BOT_USERNAME}/${BOT_APP_NAME}?startapp=ref_${currentUser.id}`;
+            document.getElementById('home-ref-link').innerText = link;
+
+            renderTasks();
+        }
+
+        // 6. AD WATCH SYSTEM
+        function startSecureAdWatch() {
+            triggerHaptic('medium');
+            if ((userData.dailyAdsWatched || 0) >= appSettings.dailyAdLimit) {
+                return showToast("আজকের অ্যাড সীমা শেষ!", "error");
+            }
+
+            const btn = document.getElementById('watch-ad-btn');
+            btn.disabled = true;
+            isAdWatching = true;
+            adSecondsLeft = 15;
+
+            // Trigger Monetag Ad or Direct Link
+            if (appSettings.adLink) {
+                tg ? tg.openLink(appSettings.adLink) : window.open(appSettings.adLink, '_blank');
+            } else if (typeof show_10487556 === 'function') {
+                show_10487556().catch(() => {});
+            }
+
+            btn.innerHTML = `<span class="text-pink-400 font-bold text-xs mx-auto animate-pulse">অপেক্ষা করুন... (${adSecondsLeft}s)</span>`;
+
+            adWatchTimer = setInterval(() => {
+                adSecondsLeft--;
+                btn.innerHTML = `<span class="text-pink-400 font-bold text-xs mx-auto animate-pulse">অপেক্ষা করুন... (${adSecondsLeft}s)</span>`;
+
+                if (adSecondsLeft <= 0) {
+                    clearInterval(adWatchTimer);
+                    isAdWatching = false;
+                    creditAdReward();
+                }
+            }, 1000);
+        }
+
+        async function creditAdReward() {
+            const btn = document.getElementById('watch-ad-btn');
+            btn.innerHTML = `<span class="text-xs mx-auto"><i class="fa-solid fa-spinner fa-spin"></i> রিওয়ার্ড যোগ হচ্ছে...</span>`;
+
+            try {
+                await db.runTransaction(async (t) => {
+                    const uRef = db.collection('users').doc(currentUser.id.toString());
+                    const doc = await t.get(uRef);
+                    const d = doc.data();
+
+                    const rew = parseFloat(appSettings.adReward || 0.50);
+                    t.update(uRef, {
+                        balance: (d.balance || 0) + rew,
+                        dailyAdsWatched: (d.dailyAdsWatched || 0) + 1,
+                        totalIncome: (d.totalIncome || 0) + rew
+                    });
+                });
+                showToast(`+৳${appSettings.adReward} ব্যালেন্সে যোগ হয়েছে!`, "success");
+            } catch (e) {
+                showToast("রিওয়ার্ড প্রক্রিয়া ব্যর্থ হয়েছে", "error");
+            } finally {
+                resetAdButton();
+            }
+        }
+
+        // 7. TASKS ENGINE
+        function renderTasks() {
+            const container = document.getElementById('dynamic-tasks-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const completed = userData.completedTasks || [];
+            const activeTasks = tasksList.filter(t => !completed.includes(t.id));
+
+            if (activeTasks.length === 0) {
+                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-4">বর্তমানে কোনো টাস্ক উপলব্ধ নেই</p>`;
+                return;
+            }
+
+            activeTasks.forEach(task => {
+                const card = document.createElement('div');
+                card.className = "glass p-4 rounded-2xl flex items-center justify-between border border-pink-50 shadow-sm";
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="${task.icon || 'https://cdn-icons-png.flaticon.com/512/2098/2098402.png'}" class="w-10 h-10 rounded-xl object-contain bg-pink-50 p-1 border border-pink-100">
+                        <div>
+                            <h4 class="font-bold text-xs text-slate-800 line-clamp-1">${task.title}</h4>
+                            <p class="text-[11px] text-[#e2136e] font-black font-inter">+৳ ${parseFloat(task.reward).toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <button onclick="doTask('${task.id}', '${task.link}', ${task.reward})" class="bg-[#e2136e] text-white text-[11px] font-bold px-4 py-2 rounded-xl btn-press shadow">
+                        শুরু করুন
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function doTask(taskId, link, reward) {
+            triggerHaptic('medium');
+            tg ? tg.openLink(link) : window.open(link, '_blank');
+            showToast("টাস্ক যাচাই করা হচ্ছে...", "info");
+
+            setTimeout(async () => {
+                try {
+                    await db.runTransaction(async (t) => {
+                        const uRef = db.collection('users').doc(currentUser.id.toString());
+                        const doc = await t.get(uRef);
+                        const d = doc.data();
+
+                        if (d.completedTasks && d.completedTasks.includes(taskId)) throw "Done";
+
+                        t.update(uRef, {
+                            balance: (d.balance || 0) + parseFloat(reward),
+                            totalIncome: (d.totalIncome || 0) + parseFloat(reward),
+                            completedTasks: [...(d.completedTasks || []), taskId]
+                        });
+                    });
+                    showToast(`টাস্ক সম্পন্ন! +৳${reward}`, "success");
+                } catch(e) {}
+            }, 4000);
+        }
+
+        // 8. TON WITHDRAWAL & HISTORY LOGIC
+        function calculateTonWithdrawNet() {
+            const bdtAmount = parseFloat(document.getElementById('withdraw-amount-input').value) || 0;
+            const feePercent = parseFloat(appSettings.withdrawFeePercent || 0);
+            const rate = parseFloat(appSettings.tonBdtRate || 700);
+
+            const fee = (bdtAmount * feePercent) / 100;
+            const netBdt = Math.max(0, bdtAmount - fee);
+            const estTon = (netBdt / rate);
+
+            document.getElementById('ton-est-receive-label').innerText = `আপনি পাবেন: ≈ ${estTon.toFixed(4)} TON`;
+        }
+
+        async function submitTonWithdrawal() {
+            triggerHaptic('medium');
+
+            if (isSubmittingWithdrawal) return;
+
+            // 1. Validation Checks
+            if (!connectedTonAddress) {
+                return showToast("প্রথমে TON Wallet Connect করুন", "error");
+            }
+
+            const amountBDT = parseFloat(document.getElementById('withdraw-amount-input').value);
+            const minW = parseFloat(appSettings.minWithdraw || 50);
+
+            if (isNaN(amountBDT) || amountBDT < minW) {
+                return showToast(`সর্বনিম্ন উত্তোলন ৳${minW}`, "error");
+            }
+
+            if (amountBDT > (userData.balance || 0)) {
+                return showToast("পর্যাপ্ত ব্যালেন্স নেই", "error");
+            }
+
+            // Calculation
+            const feePercent = parseFloat(appSettings.withdrawFeePercent || 0);
+            const feeBDT = (amountBDT * feePercent) / 100;
+            const netBDT = amountBDT - feeBDT;
+            const tonRate = parseFloat(appSettings.tonBdtRate || 700);
+            const tonAmount = parseFloat((netBDT / tonRate).toFixed(4));
+
+            const txnId = "TXN" + Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5).toUpperCase();
+
+            // Set Loading UI
+            isSubmittingWithdrawal = true;
+            const submitBtn = document.getElementById('withdraw-submit-btn');
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> প্রসেসিং হচ্ছে...`;
+
+            try {
+                // Atomic Balance Deduction and Request Creation
+                await db.runTransaction(async (t) => {
+                    const uRef = db.collection('users').doc(currentUser.id.toString());
+                    const uDoc = await t.get(uRef);
+
+                    if (!uDoc.exists) throw new Error("ব্যবহারকারী পাওয়া যায়নি");
+                    const currentBal = uDoc.data().balance || 0;
+
+                    if (currentBal < amountBDT) {
+                        throw new Error("অপর্যাপ্ত ব্যালেন্স");
+                    }
+
+                    // Deduct balance atomically
+                    t.update(uRef, {
+                        balance: currentBal - amountBDT,
+                        lastWithdrawalAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    // Create withdrawal document
+                    const withdrawRef = db.collection('withdrawals').doc();
+                    t.set(withdrawRef, {
+                        txnId: txnId,
+                        userId: currentUser.id.toString(),
+                        username: userData.username || currentUser.username || "User",
+                        walletAddress: connectedTonAddress,
+                        network: "mainnet",
+                        amountBDT: amountBDT,
+                        feeBDT: feeBDT,
+                        netAmountBDT: netBDT,
+                        tonAmount: tonAmount,
+                        exchangeRate: tonRate,
+                        status: "pending", // pending, processing, approved, paid, rejected, cancelled
+                        blockchainTxHash: null,
+                        rejectionReason: null,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        processedAt: null
+                    });
+                });
+
+                showToast("উইথড্র রিকোয়েস্ট সফল হয়েছে", "success");
+                document.getElementById('withdraw-amount-input').value = "";
+                calculateTonWithdrawNet();
+
+                sendBotMessage(currentUser.id, `💎 <b>TON উইথড্র রিকোয়েস্ট গৃহীত হয়েছে!</b>\n\n🆔 <b>TXN:</b> <code>${txnId}</code>\n💵 <b>পরিমাণ:</b> ৳ ${amountBDT.toFixed(2)} (${tonAmount} TON)\n💼 <b>ওয়ালেট:</b> <code>${toUserFriendlyAddress(connectedTonAddress)}</code>\n⏳ স্ট্যাটাস: <b>Pending</b>`);
+
+            } catch (err) {
+                console.error("Withdrawal error:", err);
+                showToast(err.message || "উইথড্র সম্পন্ন করা যায়নি", "error");
+            } finally {
+                isSubmittingWithdrawal = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+            }
+        }
+
+        // Realtime User Withdrawal History Listener
+        function listenWithdrawalHistory() {
+            if (historyUnsubscribe) historyUnsubscribe();
+
+            const historyList = document.getElementById('wallet-history-list');
+
+            historyUnsubscribe = db.collection('withdrawals')
+                .where('userId', '==', currentUser.id.toString())
+                .orderBy('createdAt', 'desc')
+                .limit(20)
+                .onSnapshot(snap => {
+                    if (snap.empty) {
+                        historyList.innerHTML = `<div class="text-center py-6 glass rounded-2xl border border-pink-50"><p class="text-xs text-slate-400">কোনো হিস্টোরি পাওয়া যায়নি</p></div>`;
+                        return;
+                    }
+
+                    historyList.innerHTML = "";
+                    snap.forEach(doc => {
+                        const item = doc.data();
+                        const statusConfig = getStatusBadge(item.status);
+                        
+                        let dateStr = "সাম্প্রতিক";
+                        if (item.createdAt && item.createdAt.toDate) {
+                            const d = item.createdAt.toDate();
+                            dateStr = d.toLocaleDateString('bn-BD', { month: 'short', day: 'numeric' }) + ", " + d.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+                        }
+
+                        const card = document.createElement('div');
+                        card.className = "glass p-3.5 rounded-2xl border border-pink-50 shadow-sm space-y-2";
+                        card.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${statusConfig.class} flex items-center gap-1">
+                                    ${statusConfig.icon} ${statusConfig.label}
+                                </span>
+                                <span class="text-[10px] text-slate-400 font-inter">${dateStr}</span>
+                            </div>
+                            <div class="flex justify-between items-end pt-1">
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-800 font-inter">৳${parseFloat(item.amountBDT || 0).toFixed(2)} → <span class="text-sky-600">${item.tonAmount || 0} TON</span></h4>
+                                    <p class="text-[10px] text-slate-400 font-mono tracking-tight mt-0.5">TXN: ${item.txnId || doc.id.substring(0, 8)}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[10px] font-mono text-slate-600 font-semibold block">${formatShortAddress(toUserFriendlyAddress(item.walletAddress))}</span>
+                                </div>
+                            </div>
+                            ${item.blockchainTxHash ? `
+                                <div class="pt-2 border-t border-slate-100 flex justify-end">
+                                    <a href="https://tonviewer.com/transaction/${item.blockchainTxHash}" target="_blank" class="text-[10px] text-sky-600 font-bold flex items-center gap-1 hover:underline">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i> এক্সপ্লোরার ভিউ
+                                    </a>
+                                </div>
+                            ` : ''}
+                            ${item.rejectionReason ? `
+                                <p class="text-[10px] text-rose-500 bg-rose-50 p-2 rounded-lg mt-1 font-medium">কারণ: ${item.rejectionReason}</p>
+                            ` : ''}
+                        `;
+                        historyList.appendChild(card);
+                    });
+                }, error => {
+                    console.error("History listener error:", error);
+                    historyList.innerHTML = `<p class="text-center text-xs text-slate-400 py-3">হিস্টোরি রিলোড করতে ব্যর্থ হয়েছে</p>`;
+                });
+        }
+
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'paid':
+                    return { label: 'পরিশোধিত', class: 'bg-emerald-50 text-emerald-600 border border-emerald-200', icon: '<i class="fa-solid fa-circle-check"></i>' };
+                case 'processing':
+                    return { label: 'প্রসেসিং', class: 'bg-sky-50 text-sky-600 border border-sky-200', icon: '<i class="fa-solid fa-spinner fa-spin"></i>' };
+                case 'approved':
+                    return { label: 'অনুমোদিত', class: 'bg-blue-50 text-blue-600 border border-blue-200', icon: '<i class="fa-solid fa-check"></i>' };
+                case 'rejected':
+                    return { label: 'বাতিল', class: 'bg-rose-50 text-rose-600 border border-rose-200', icon: '<i class="fa-solid fa-circle-xmark"></i>' };
+                case 'cancelled':
+                    return { label: 'বাতিলকৃত', class: 'bg-slate-100 text-slate-500 border border-slate-200', icon: '<i class="fa-solid fa-ban"></i>' };
+                case 'pending':
+                default:
+                    return { label: 'পেন্ডিং', class: 'bg-amber-50 text-amber-600 border border-amber-200', icon: '<i class="fa-solid fa-clock"></i>' };
+            }
+        }
+
+        // 9. POPUP NOTICE ENGINE
+        async function checkPopupNotice() {
+            const snap = await db.collection('notices').orderBy('date', 'desc').limit(1).get();
+            if (snap.empty) return;
+
+            const notice = snap.docs[0].data();
+            const noticeId = snap.docs[0].id;
+            const seenId = localStorage.getItem('seen_notice_id');
+
+            if (seenId !== noticeId) {
+                document.getElementById('popup-notice-title').innerText = notice.title || "জরুরী নোটিশ";
+                document.getElementById('popup-notice-body').innerText = notice.message || "";
+                
+                const vidBtn = document.getElementById('popup-notice-video-btn');
+                if (notice.videoLink) {
+                    vidBtn.href = notice.videoLink;
+                    vidBtn.classList.remove('hidden');
+                } else {
+                    vidBtn.classList.add('hidden');
+                }
+
+                document.getElementById('notice-modal').classList.remove('hidden');
+                localStorage.setItem('seen_notice_id', noticeId);
+            }
+        }
+
+        function closeNoticeModal() {
+            document.getElementById('notice-modal').classList.add('hidden');
+        }
+
+        // 10. NAVIGATION & UI HELPERS
+        function switchTab(tabId) {
+            triggerHaptic('light');
+            document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                if(btn.dataset.target === tabId) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            document.getElementById('main-content').scrollTop = 0;
+        }
+
+        function copyRefLink() {
+            triggerHaptic('medium');
+            const link = document.getElementById('home-ref-link').innerText;
+            navigator.clipboard.writeText(link);
+            showToast("লিংক কপি হয়েছে!", "success");
+        }
+
+        function showToast(msg, type = "success") {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            const icon = document.getElementById('toast-icon');
+            icon.className = type === 'error' ? 'fa-solid fa-circle-xmark text-rose-400' : 'fa-solid fa-circle-check text-pink-400';
+            t.style.top = '25px';
+            setTimeout(() => t.style.top = '-60px', 2800);
+        }
+    </script>
 </body>
 </html>
