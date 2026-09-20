@@ -1,248 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-  <title>TON Wallet Connect</title>
+    <title>Nahid TON Wallet</title>
 
-  <!-- TON Connect UI -->
-  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <!-- TON Connect UI -->
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: #0b0f16;
-      color: white;
-      font-family: Arial, sans-serif;
+        body {
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top, #263b70 0%, #101522 45%, #080b12 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
+        .container {
+            width: 100%;
+            max-width: 430px;
+        }
 
-      padding: 20px;
-    }
+        .card {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 25px;
+            padding: 28px 20px;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        }
 
-    .box {
-      width: 100%;
-      max-width: 420px;
+        .logo {
+            width: 90px;
+            height: 90px;
+            border-radius: 25px;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
 
-      background: #151a23;
-      border: 1px solid #29313d;
+        h1 {
+            font-size: 27px;
+            margin-bottom: 8px;
+        }
 
-      border-radius: 22px;
-      padding: 30px 22px;
+        .subtitle {
+            color: #aeb7ca;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
 
-      text-align: center;
-    }
+        #ton-connect {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
 
-    .logo {
-      width: 70px;
-      height: 70px;
+        .wallet-box {
+            display: none;
+            background: rgba(0,0,0,0.25);
+            border-radius: 18px;
+            padding: 18px;
+            margin-top: 15px;
+            text-align: left;
+        }
 
-      margin: auto;
-      margin-bottom: 18px;
+        .wallet-box.active {
+            display: block;
+        }
 
-      border-radius: 50%;
+        .label {
+            color: #8994aa;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
 
-      background: #0098ea;
+        .address {
+            font-size: 13px;
+            word-break: break-all;
+            line-height: 1.5;
+            color: #ffffff;
+        }
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
+        .network {
+            margin-top: 12px;
+            color: #65e6a3;
+            font-size: 13px;
+        }
 
-      font-size: 32px;
-    }
+        .status {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #9ca8bd;
+        }
 
-    h1 {
-      margin: 0 0 10px;
-      font-size: 25px;
-    }
-
-    .text {
-      color: #9aa4b2;
-      font-size: 14px;
-      line-height: 1.5;
-
-      margin-bottom: 25px;
-    }
-
-    #connect-button {
-      display: flex;
-      justify-content: center;
-    }
-
-    .wallet-info {
-      display: none;
-
-      margin-top: 22px;
-
-      padding: 16px;
-
-      background: #0d1219;
-
-      border-radius: 14px;
-
-      text-align: left;
-    }
-
-    .title {
-      color: #8e99a8;
-      font-size: 12px;
-
-      margin-bottom: 7px;
-    }
-
-    #address {
-      word-break: break-all;
-
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .status {
-      margin-top: 12px;
-
-      color: #35d07f;
-      font-size: 13px;
-    }
-  </style>
+        .footer {
+            margin-top: 22px;
+            font-size: 11px;
+            color: #69748a;
+        }
+    </style>
 </head>
 
 <body>
 
-  <div class="box">
+<div class="container">
 
-    <div class="logo">
-      💎
+    <div class="card">
+
+        <img
+            src="icon.png"
+            class="logo"
+            alt="TON Wallet"
+        >
+
+        <h1>Nahid TON Wallet</h1>
+
+        <div class="subtitle">
+            Connect your TON wallet securely
+        </div>
+
+        <!-- TON Connect Button -->
+        <div id="ton-connect"></div>
+
+        <!-- Wallet Information -->
+        <div id="walletBox" class="wallet-box">
+
+            <div class="label">
+                WALLET ADDRESS
+            </div>
+
+            <div id="walletAddress" class="address">
+                -
+            </div>
+
+            <div id="walletNetwork" class="network">
+                ● Connected
+            </div>
+
+        </div>
+
+        <div id="status" class="status">
+            Wallet not connected
+        </div>
+
+        <div class="footer">
+            Powered by TON Connect
+        </div>
+
     </div>
 
-    <h1>Connect TON Wallet</h1>
-
-    <div class="text">
-      Connect your TON wallet to continue.
-    </div>
-
-    <!-- TON Connect Button -->
-    <div id="connect-button"></div>
-
-    <!-- Wallet information -->
-    <div class="wallet-info" id="walletInfo">
-
-      <div class="title">
-        Connected Wallet
-      </div>
-
-      <div id="address">
-        -
-      </div>
-
-      <div class="status">
-        ● Wallet Connected
-      </div>
-
-    </div>
-
-  </div>
+</div>
 
 
 <script>
 
-  /*
-  ==========================================
-  TON CONNECT CONFIG
-  ==========================================
-  */
+    // ============================================
+    // TON CONNECT CONFIGURATION
+    // ============================================
 
-  /*
-  IMPORTANT:
-
-  এখানে তোমার নিজের domain বসাতে হবে।
-
-  Example:
-
-  https://yourdomain.com/tonconnect-manifest.json
-
-  */
-
-  const manifestUrl =
-    "https://YOUR-DOMAIN.com/tonconnect-manifest.json";
+    const manifestUrl =
+        "https://nahidulxsr-gif.github.io/ton-wallet/tonconnect-manifest.json";
 
 
-  /*
-  ==========================================
-  CREATE TON CONNECT
-  ==========================================
-  */
+    // Create TON Connect UI
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
 
-  const tonConnectUI =
-    new TON_CONNECT_UI.TonConnectUI({
+        manifestUrl: manifestUrl,
 
-      manifestUrl: manifestUrl,
-
-      buttonRootId: "connect-button"
+        buttonRootId: "ton-connect"
 
     });
 
 
-  /*
-  ==========================================
-  WALLET STATUS
-  ==========================================
-  */
+    // ============================================
+    // ELEMENTS
+    // ============================================
 
-  tonConnectUI.onStatusChange(
-    function(wallet) {
+    const walletBox =
+        document.getElementById("walletBox");
 
-      const walletInfo =
-        document.getElementById("walletInfo");
+    const walletAddress =
+        document.getElementById("walletAddress");
 
-      const address =
-        document.getElementById("address");
+    const walletNetwork =
+        document.getElementById("walletNetwork");
 
-
-      /*
-      Wallet connected
-      */
-
-      if (wallet && wallet.account) {
-
-        walletInfo.style.display = "block";
-
-        address.innerText =
-          wallet.account.address;
-
-        console.log(
-          "TON Wallet Connected:",
-          wallet.account.address
-        );
-
-      }
+    const status =
+        document.getElementById("status");
 
 
-      /*
-      Wallet disconnected
-      */
+    // ============================================
+    // WALLET STATUS
+    // ============================================
 
-      else {
+    tonConnectUI.onStatusChange(function(wallet) {
 
-        walletInfo.style.display = "none";
+        if (wallet) {
 
-        address.innerText = "-";
+            console.log("Wallet connected:", wallet);
 
-        console.log(
-          "TON Wallet Disconnected"
-        );
+            // Show wallet box
+            walletBox.classList.add("active");
 
-      }
+            // Wallet address
+            walletAddress.textContent =
+                wallet.account.address;
+
+            // Network
+            if (wallet.account.chain === "-239") {
+
+                walletNetwork.textContent =
+                    "● Connected • TON Mainnet";
+
+            } else if (wallet.account.chain === "-3") {
+
+                walletNetwork.textContent =
+                    "● Connected • TON Testnet";
+
+            } else {
+
+                walletNetwork.textContent =
+                    "● Connected";
+
+            }
+
+            status.textContent =
+                "Wallet successfully connected";
+
+        } else {
+
+            // Wallet disconnected
+
+            walletBox.classList.remove("active");
+
+            walletAddress.textContent = "-";
+
+            walletNetwork.textContent =
+                "● Not connected";
+
+            status.textContent =
+                "Wallet not connected";
+
+        }
+
+    });
+
+
+    // ============================================
+    // OPTIONAL: GET CURRENT WALLET
+    // ============================================
+
+    async function checkWallet() {
+
+        try {
+
+            const wallet =
+                tonConnectUI.wallet;
+
+            if (wallet) {
+
+                console.log(
+                    "Current wallet:",
+                    wallet.account.address
+                );
+
+            }
+
+        } catch(error) {
+
+            console.log(error);
+
+        }
 
     }
-  );
+
+
+    checkWallet();
 
 </script>
 
